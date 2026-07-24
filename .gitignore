@@ -1,0 +1,13 @@
+# Ignore Docker-generated or temporary files
+*.log
+*.tmp
+
+# Git metadata
+.git
+
+# Editor files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
