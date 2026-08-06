@@ -1,5 +1,6 @@
 #include "BlockBuffer.h"
 #include <cstring>
+#include <cstdio>
 
 // Constructor
 BlockBuffer::BlockBuffer(int blockNum) {
@@ -126,15 +127,20 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum) {
 }
 int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **buffPtr) {
   // check whether the block is already present in the buffer using StaticBuffer.getBufferNum()
-  int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
+
+    int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
+
+   
 
     if (bufferNum == E_BLOCKNOTINBUFFER) {
-    bufferNum = StaticBuffer::getFreeBuffer(this->blockNum);
 
-    if (bufferNum == E_OUTOFBOUND) {
-      return E_OUTOFBOUND;
-    }
 
+        bufferNum = StaticBuffer::getFreeBuffer(this->blockNum);
+
+
+        if (bufferNum < 0) {
+            return bufferNum;
+        }
     Disk::readBlock(StaticBuffer::blocks[bufferNum], this->blockNum);
   }
 
