@@ -1,87 +1,45 @@
 #include <cstdio>
 #include <cstring>
-
+#include <iostream>
 #include "Buffer/BlockBuffer.h"
 #include "define/constants.h"
+#include "FrontendInterface/FrontendInterface.h"
+#include "Cache/RelCacheTable.h"
+#include "Cache/AttrCacheTable.h"
+#include "Cache/OpenRelTable.h"
 
 int main(int argc, char *argv[]) {
 
-    Disk disk_run;
-    StaticBuffer static_buffer;
+  Disk disk_run;
+  StaticBuffer buffer;
+  OpenRelTable cache;
 
-    // Relation Catalog
-    RecBuffer relCatBuffer(RELCAT_BLOCK);
+  for (int i = 0; i <= 2; i++) {
 
-    HeadInfo relCatHeader;
+    RelCatEntry relCatEntry;
 
-    relCatBuffer.getHeader(&relCatHeader);
+    // Get relation catalog entry
+    RelCacheTable::getRelCatEntry(i, &relCatEntry);
 
+    printf("Relation: %s\n", relCatEntry.relName);
 
+    // Get all attribute catalog entries
+    for (int j = 0; j < relCatEntry.numAttrs; j++) {
 
-    // Traverse all relations
-    for(int i = 0; i < relCatHeader.numEntries; i++) {
+      AttrCatEntry attrCatEntry;
 
-        Attribute relCatRecord[RELCAT_NO_ATTRS];
+      AttrCacheTable::getAttrCatEntry(i, j, &attrCatEntry);
 
-        relCatBuffer.getRecord(relCatRecord, i);
+      printf("  %s: ", attrCatEntry.attrName);
 
-
-        printf("Relation: %s\n",
-            relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
-
-
-
-        // Traverse Attribute Catalog blocks
-        int attrBlock = ATTRCAT_BLOCK;
-
-
-        while(attrBlock != -1) {
-
-            RecBuffer attrCatBuffer(attrBlock);
-
-            HeadInfo attrCatHeader;
-
-            attrCatBuffer.getHeader(&attrCatHeader);
-
-
-
-            // Traverse attributes in this block
-            for(int j = 0; j < attrCatHeader.numEntries; j++) {
-
-                Attribute attrCatRecord[ATTRCAT_NO_ATTRS];
-
-                attrCatBuffer.getRecord(attrCatRecord, j);
-
-
-
-                // Check if attribute belongs to current relation
-                if(strcmp(
-                    attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal,
-                    relCatRecord[RELCAT_REL_NAME_INDEX].sVal
-                ) == 0) {
-
-
-                    const char *attrType =
-                        attrCatRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER
-                        ? "NUM"
-                        : "STR";
-
-
-                    printf("  %s : %s\n",
-                        attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,
-                        attrType);
-                }
-            }
-
-
-            // Move to next attribute catalog block
-            attrBlock = attrCatHeader.rblock;
-        }
-
-
-        printf("\n");
+      if (attrCatEntry.attrType == STRING) {
+        printf("STRING\n");
+      }
+      else if (attrCatEntry.attrType == NUMBER) {
+        printf("NUMBER\n");
+      }
     }
+  }
 
-
-    return 0;
+  return 0;
 }
