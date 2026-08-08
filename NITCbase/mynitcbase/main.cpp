@@ -41,5 +41,5 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  return 0;
+  return FrontendInterface::handleFrontend(argc, argv);
 }
