@@ -1,5 +1,6 @@
 #include "OpenRelTable.h"
 #include <cstring>
+#include <cstdio>
 #include <cstdlib>
 #include "../Buffer/BlockBuffer.h"
 #include "../define/constants.h"
@@ -85,6 +86,20 @@ OpenRelTable::OpenRelTable() {
 
   *(RelCacheTable::relCache[2]) = studentRelCacheEntry;
 
+  printf("Students relName = %s\n",
+        RelCacheTable::relCache[2]->relCatEntry.relName);
+
+  printf("Students numAttrs = %d\n",
+        RelCacheTable::relCache[2]->relCatEntry.numAttrs);
+
+  printf("Students numRecs = %d\n",
+        RelCacheTable::relCache[2]->relCatEntry.numRecs);
+
+  printf("Students firstBlk = %d\n",
+        RelCacheTable::relCache[2]->relCatEntry.firstBlk);
+
+  printf("Students lastBlk = %d\n",
+        RelCacheTable::relCache[2]->relCatEntry.lastBlk);
   /************ Setting up Attribute cache entries ************/
 
 
@@ -234,4 +249,20 @@ OpenRelTable::~OpenRelTable() {
 
     AttrCacheTable::attrCache[i] = nullptr;
   }
+}
+int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
+
+    if (strcmp(relName, RELCAT_RELNAME) == 0) {
+        return RELCAT_RELID;
+    }
+
+    if (strcmp(relName, ATTRCAT_RELNAME) == 0) {
+        return ATTRCAT_RELID;
+    }
+
+    if (strcmp(relName, "Students") == 0) {
+        return 2;
+    }
+
+    return E_RELNOTOPEN;
 }

@@ -14,32 +14,32 @@ int main(int argc, char *argv[]) {
   StaticBuffer buffer;
   OpenRelTable cache;
 
-  for (int i = 0; i <= 2; i++) {
+  // for (int i = 0; i <= 2; i++) {
 
-    RelCatEntry relCatEntry;
+  //   RelCatEntry relCatEntry;
 
-    // Get relation catalog entry
-    RelCacheTable::getRelCatEntry(i, &relCatEntry);
+  //   // Get relation catalog entry
+  //   RelCacheTable::getRelCatEntry(i, &relCatEntry);
 
-    printf("Relation: %s\n", relCatEntry.relName);
+  //   printf("Relation: %s\n", relCatEntry.relName);
 
-    // Get all attribute catalog entries
-    for (int j = 0; j < relCatEntry.numAttrs; j++) {
+  //   // Get all attribute catalog entries
+  //   for (int j = 0; j < relCatEntry.numAttrs; j++) {
 
-      AttrCatEntry attrCatEntry;
+  //     AttrCatEntry attrCatEntry;
 
-      AttrCacheTable::getAttrCatEntry(i, j, &attrCatEntry);
+  //     AttrCacheTable::getAttrCatEntry(i, j, &attrCatEntry);
 
-      printf("  %s: ", attrCatEntry.attrName);
+  //     printf("  %s: ", attrCatEntry.attrName);
 
-      if (attrCatEntry.attrType == STRING) {
-        printf("STRING\n");
-      }
-      else if (attrCatEntry.attrType == NUMBER) {
-        printf("NUMBER\n");
-      }
-    }
-  }
+  //     if (attrCatEntry.attrType == STRING) {
+  //       printf("STRING\n");
+  //     }
+  //     else if (attrCatEntry.attrType == NUMBER) {
+  //       printf("NUMBER\n");
+  //     }
+  //   }
+  // }
 
   return FrontendInterface::handleFrontend(argc, argv);
 }

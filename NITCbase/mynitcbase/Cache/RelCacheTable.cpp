@@ -46,3 +46,53 @@ void RelCacheTable::recordToRelCatEntry(union Attribute record[RELCAT_NO_ATTRS],
   relCatEntry->numSlotsPerBlk =
       (int)record[RELCAT_NO_SLOTS_PER_BLOCK_INDEX].nVal;
 }
+/*
+will return the searchIndex for the relation corresponding to relId
+
+NOTE: this function expects the caller to allocate memory for *searchIndex
+*/
+int RelCacheTable::getSearchIndex(int relId, RecId* searchIndex) {
+
+    // check if relId is within valid range
+    if (relId < 0 || relId >= MAX_OPEN)
+        return E_OUTOFBOUND;
+
+    // check if relation is open
+    if (relCache[relId] == nullptr)
+        return E_RELNOTOPEN;
+
+    // copy searchIndex of relation cache entry
+    *searchIndex = relCache[relId]->searchIndex;
+
+    return SUCCESS;
+}
+
+
+// sets the searchIndex for the relation corresponding to relId
+int RelCacheTable::setSearchIndex(int relId, RecId* searchIndex) {
+
+    // check if relId is within valid range
+    if (relId < 0 || relId >= MAX_OPEN)
+        return E_OUTOFBOUND;
+
+    // check if relation is open
+    if (relCache[relId] == nullptr)
+        return E_RELNOTOPEN;
+
+    // update searchIndex
+    relCache[relId]->searchIndex = *searchIndex;
+
+    return SUCCESS;
+}
+
+
+int RelCacheTable::resetSearchIndex(int relId) {
+
+    RecId searchIndex;
+
+    // set search index to invalid record {-1,-1}
+    searchIndex.block = -1;
+    searchIndex.slot = -1;
+
+    return setSearchIndex(relId, &searchIndex);
+}

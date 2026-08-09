@@ -149,3 +149,46 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **buffPtr) {
 
   return SUCCESS;
 }
+int RecBuffer::getSlotMap(unsigned char *slotMap) {
+    unsigned char *bufferPtr;
+
+    // Get the starting address of the buffer containing the block
+    int ret = loadBlockAndGetBufferPtr(&bufferPtr);
+    if (ret != SUCCESS) {
+        return ret;
+    }
+
+    struct HeadInfo head;
+
+    // Get the header of the block
+    getHeader(&head);
+
+    // Number of slots in the block
+    int slotCount = head.numSlots;
+
+    // Pointer to the beginning of the slot map
+    unsigned char *slotMapInBuffer = bufferPtr + HEADER_SIZE;
+
+    // Copy slot map to caller's buffer
+    memcpy(slotMap, slotMapInBuffer, slotCount);
+
+    return SUCCESS;
+}
+int compareAttrs(union Attribute attr1, union Attribute attr2, int attrType) {
+
+    double diff;
+
+    if (attrType == STRING) {
+        diff = strcmp(attr1.sVal, attr2.sVal);
+    }
+    else {
+        diff = attr1.nVal - attr2.nVal;
+    }
+
+    if (diff > 0)
+        return 1;
+    else if (diff < 0)
+        return -1;
+    else
+        return 0;
+}
