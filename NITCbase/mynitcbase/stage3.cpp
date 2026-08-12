@@ -41,16 +41,5 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // unsigned char buffer3[BLOCK_SIZE];
-
-  // for (int block = 0; block <= 3; block++) {
-  //     Disk::readBlock(buffer3, block);
-  //     std::cout << "Block " << block << ":\n";
-  //     for (int i = 0; i < BLOCK_SIZE; i++) {
-  //         std::cout << (int)buffer3[i] << " ";
-  //     }
-  //     std::cout << "\n\n";
-  // }
-
-  return FrontendInterface::handleFrontend(argc, argv);
+  return 0;
 }
