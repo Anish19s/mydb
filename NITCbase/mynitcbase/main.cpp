@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
   StaticBuffer buffer;
   OpenRelTable cache;
 
-  for (int i = 0; i <= 2; i++) {
+  for (int i = 0; i <2; i++) {
 
     RelCatEntry relCatEntry;
 
@@ -40,7 +40,6 @@ int main(int argc, char *argv[]) {
       }
     }
   }
-  std::cout<<AttrCacheTable::getAttroffset(2,"Name");
   // unsigned char buffer3[BLOCK_SIZE];
 
   // for (int block = 0; block <= 3; block++) {
