@@ -1,5 +1,5 @@
 #include "AttrCacheTable.h"
-
+// #include </RelCacheTable.h>
 #include <cstring>
 AttrCacheEntry* AttrCacheTable::attrCache[MAX_OPEN];
 
@@ -32,7 +32,29 @@ int AttrCacheTable::getAttrCatEntry(int relId, int attrOffset, AttrCatEntry* att
   // there is no attribute at this offset
   return E_ATTRNOTEXIST;
 }
+int AttrCacheTable::getAttroffset(int relId,const char* attrName){
+    // AttrCatEntry attrCatEntry;
 
+    // ret = AttrCacheTable::getAttrCatEntry(
+    //     relId,
+    //     attrName,
+    //     &attrCatEntry
+    // );
+    // Attribute record[relCatEntry.numAttrs];
+    AttrCacheEntry* curr = attrCache[relId];
+    int f=0;
+    while(curr!=nullptr){
+         if (strcmp(curr->attrCatEntry.attrName, attrName) == 0) {
+
+            // copy the attribute catalog entry
+            f=curr->attrCatEntry.offset;
+            return f;
+        }
+
+        curr = curr->next;
+    }
+    return -1;
+}
 
 /* Converts an attribute catalog record to AttrCatEntry struct
 */

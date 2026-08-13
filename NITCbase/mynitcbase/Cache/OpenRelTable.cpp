@@ -22,7 +22,11 @@ OpenRelTable::OpenRelTable() {
   RecBuffer relCatBlock(RELCAT_BLOCK);
 
   Attribute relCatRecord[RELCAT_NO_ATTRS];
-  relCatBlock.getRecord(relCatRecord, RELCAT_SLOTNUM_FOR_RELCAT);
+
+  relCatBlock.getRecord(
+      relCatRecord,
+      RELCAT_SLOTNUM_FOR_RELCAT
+  );
 
   RelCacheEntry relCacheEntry;
 
@@ -34,17 +38,19 @@ OpenRelTable::OpenRelTable() {
   relCacheEntry.recId.block = RELCAT_BLOCK;
   relCacheEntry.recId.slot = RELCAT_SLOTNUM_FOR_RELCAT;
 
-
   RelCacheTable::relCache[RELCAT_RELID] =
       (RelCacheEntry*)malloc(sizeof(RelCacheEntry));
 
-  *(RelCacheTable::relCache[RELCAT_RELID]) = relCacheEntry;
-
+  *(RelCacheTable::relCache[RELCAT_RELID]) =
+      relCacheEntry;
 
 
   // -------- Attribute Catalog --------
 
-  relCatBlock.getRecord(relCatRecord, RELCAT_SLOTNUM_FOR_ATTRCAT);
+  relCatBlock.getRecord(
+      relCatRecord,
+      RELCAT_SLOTNUM_FOR_ATTRCAT
+  );
 
   RelCacheEntry attrRelCacheEntry;
 
@@ -56,35 +62,51 @@ OpenRelTable::OpenRelTable() {
   attrRelCacheEntry.recId.block = RELCAT_BLOCK;
   attrRelCacheEntry.recId.slot = RELCAT_SLOTNUM_FOR_ATTRCAT;
 
-
   RelCacheTable::relCache[ATTRCAT_RELID] =
       (RelCacheEntry*)malloc(sizeof(RelCacheEntry));
 
-  *(RelCacheTable::relCache[ATTRCAT_RELID]) = attrRelCacheEntry;
+  *(RelCacheTable::relCache[ATTRCAT_RELID]) =
+      attrRelCacheEntry;
 
-    /************ Setting up Students relation in Relation Cache ************/
 
+  /*
+   * ---------------------------------------------------------
+   * Students relation
+   * ---------------------------------------------------------
+   *
+   * TEMPORARILY DISABLED.
+   *
+   * After FDISK, slot 2 of RELATIONCAT is empty.
+   * Therefore reading slot 2 here gives garbage values.
+   *
+   * First create Students using:
+   *
+   * CREATE TABLE Students(...);
+   *
+   * Then this section can be enabled again.
+   *
+   */
 
+  
   Attribute studentRecord[RELCAT_NO_ATTRS];
 
-  // Students entry is in slot 2
   relCatBlock.getRecord(studentRecord, 2);
 
   RelCacheEntry studentRelCacheEntry;
 
   RelCacheTable::recordToRelCatEntry(
-          studentRecord,
-          &studentRelCacheEntry.relCatEntry
+      studentRecord,
+      &studentRelCacheEntry.relCatEntry
   );
 
   studentRelCacheEntry.recId.block = RELCAT_BLOCK;
   studentRelCacheEntry.recId.slot = 2;
 
-
   RelCacheTable::relCache[2] =
       (RelCacheEntry*)malloc(sizeof(RelCacheEntry));
 
-  *(RelCacheTable::relCache[2]) = studentRelCacheEntry;
+  *(RelCacheTable::relCache[2]) =
+      studentRelCacheEntry;
 
   printf("Students relName = %s\n",
         RelCacheTable::relCache[2]->relCatEntry.relName);
@@ -100,8 +122,10 @@ OpenRelTable::OpenRelTable() {
 
   printf("Students lastBlk = %d\n",
         RelCacheTable::relCache[2]->relCatEntry.lastBlk);
-  /************ Setting up Attribute cache entries ************/
+  
 
+
+  /************ Setting up Attribute cache entries ************/
 
   RecBuffer attrCatBlock(ATTRCAT_BLOCK);
 
@@ -118,16 +142,13 @@ OpenRelTable::OpenRelTable() {
 
     attrCatBlock.getRecord(attrCatRecord, i);
 
-
     AttrCacheEntry *entry =
         (AttrCacheEntry*)malloc(sizeof(AttrCacheEntry));
-
 
     AttrCacheTable::recordToAttrCatEntry(
         attrCatRecord,
         &entry->attrCatEntry
     );
-
 
     entry->recId.block = ATTRCAT_BLOCK;
     entry->recId.slot = i;
@@ -140,13 +161,12 @@ OpenRelTable::OpenRelTable() {
     else
       prev->next = entry;
 
-
     prev = entry;
   }
 
 
-  AttrCacheTable::attrCache[RELCAT_RELID] = relAttrHead;
-
+  AttrCacheTable::attrCache[RELCAT_RELID] =
+      relAttrHead;
 
 
   // -------- Attributes of Attribute Catalog --------
@@ -158,22 +178,22 @@ OpenRelTable::OpenRelTable() {
   for (int i = 0; i < ATTRCAT_NO_ATTRS; i++) {
 
     // Attribute catalog entries start from slot 6
-    attrCatBlock.getRecord(attrCatRecord,
-                           RELCAT_NO_ATTRS + i);
-
+    attrCatBlock.getRecord(
+        attrCatRecord,
+        RELCAT_NO_ATTRS + i
+    );
 
     AttrCacheEntry *entry =
         (AttrCacheEntry*)malloc(sizeof(AttrCacheEntry));
-
 
     AttrCacheTable::recordToAttrCatEntry(
         attrCatRecord,
         &entry->attrCatEntry
     );
 
-
     entry->recId.block = ATTRCAT_BLOCK;
-    entry->recId.slot = RELCAT_NO_ATTRS + i;
+    entry->recId.slot =
+        RELCAT_NO_ATTRS + i;
 
     entry->next = nullptr;
 
@@ -183,18 +203,31 @@ OpenRelTable::OpenRelTable() {
     else
       prev->next = entry;
 
-
     prev = entry;
   }
 
 
-  AttrCacheTable::attrCache[ATTRCAT_RELID] = attrAttrHead;
-  // -------- Attributes of Students --------
+  AttrCacheTable::attrCache[ATTRCAT_RELID] =
+      attrAttrHead;
 
-AttrCacheEntry *studentHead = nullptr;
-prev = nullptr;
 
-for (int i = 12; i <= 15; i++) {
+  /*
+   * ---------------------------------------------------------
+   * Students attribute cache
+   * ---------------------------------------------------------
+   *
+   * TEMPORARILY DISABLED.
+   *
+   * After FDISK, Students does not have attributes yet.
+   * We will enable this after creating Students.
+   *
+   */
+
+  
+  AttrCacheEntry *studentHead = nullptr;
+  prev = nullptr;
+
+  for (int i = 12; i <= 15; i++) {
 
     attrCatBlock.getRecord(attrCatRecord, i);
 
@@ -211,16 +244,16 @@ for (int i = 12; i <= 15; i++) {
     entry->next = nullptr;
 
     if (studentHead == nullptr)
-        studentHead = entry;
+      studentHead = entry;
     else
-        prev->next = entry;
+      prev->next = entry;
 
     prev = entry;
-}
+  }
 
-AttrCacheTable::attrCache[2] = studentHead;
+  AttrCacheTable::attrCache[2] = studentHead;
+  
 }
-
 
 
 OpenRelTable::~OpenRelTable() {
@@ -230,18 +263,22 @@ OpenRelTable::~OpenRelTable() {
   for (int i = 0; i < MAX_OPEN; i++) {
 
     if (RelCacheTable::relCache[i] != nullptr) {
+
       free(RelCacheTable::relCache[i]);
+
       RelCacheTable::relCache[i] = nullptr;
     }
 
 
     // free attribute cache linked list
 
-    AttrCacheEntry *entry = AttrCacheTable::attrCache[i];
+    AttrCacheEntry *entry =
+        AttrCacheTable::attrCache[i];
 
     while (entry != nullptr) {
 
       AttrCacheEntry *temp = entry;
+
       entry = entry->next;
 
       free(temp);
@@ -250,6 +287,8 @@ OpenRelTable::~OpenRelTable() {
     AttrCacheTable::attrCache[i] = nullptr;
   }
 }
+
+
 int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
 
     if (strcmp(relName, RELCAT_RELNAME) == 0) {
@@ -260,9 +299,17 @@ int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
         return ATTRCAT_RELID;
     }
 
+    /*
+     * Students is temporarily disabled because
+     * it has not been created yet on the freshly
+     * formatted disk.
+     */
+
+    
     if (strcmp(relName, "Students") == 0) {
         return 2;
     }
+    
 
     return E_RELNOTOPEN;
 }

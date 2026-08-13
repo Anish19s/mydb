@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
       }
     }
   }
-
+  std::cout<<AttrCacheTable::getAttroffset(2,"Name");
   // unsigned char buffer3[BLOCK_SIZE];
 
   // for (int block = 0; block <= 3; block++) {

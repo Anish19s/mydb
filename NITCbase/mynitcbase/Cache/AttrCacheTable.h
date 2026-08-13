@@ -31,6 +31,7 @@ class AttrCacheTable {
   // methods
   static int getAttrCatEntry(int relId, char attrName[ATTR_SIZE], AttrCatEntry *attrCatBuf);
   static int getAttrCatEntry(int relId, int attrOffset, AttrCatEntry *attrCatBuf);
+  static int getAttroffset(int relId,const char* attrName);
   static int setAttrCatEntry(int relId, char attrName[ATTR_SIZE], AttrCatEntry *attrCatBuf);
   static int setAttrCatEntry(int relId, int attrOffset, AttrCatEntry *attrCatBuf);
   static int getSearchIndex(int relId, char attrName[ATTR_SIZE], IndexId *searchIndex);
