@@ -384,7 +384,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
         }
 
 
-        RecBuffer attrCatBlock(ATTRCAT_BLOCK);
+        RecBuffer attrCatBlock(attrRecId.block);
 
         Attribute attrCatRecord[ATTRCAT_NO_ATTRS];
 
@@ -392,7 +392,6 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
             attrCatRecord,
             attrRecId.slot
         );
-
 
         AttrCacheEntry *entry =
             (AttrCacheEntry *)malloc(sizeof(AttrCacheEntry));

@@ -11,29 +11,32 @@
  * the previous state of the disk is not lost.
  */
 Disk::Disk() {
-  /* An efficient method to copy files */
-  /* Copy Disk to Disk Run Copy */
-  std::ifstream src(DISK_PATH, std::ios::binary);
-  std::ofstream dst(DISK_RUN_COPY_PATH, std::ios::binary);
+    std::ifstream src(DISK_PATH, std::ios::binary | std::ios::ate);
 
-  dst << src.rdbuf();
-  src.close();
-  dst.close();
+    if (!src || src.tellg() != DISK_SIZE) {
+        std::cerr << "Error: Invalid disk file!\n";
+        return;
+    }
+
+    src.seekg(0);
+    std::ofstream dst(DISK_RUN_COPY_PATH,
+                      std::ios::binary | std::ios::trunc);
+    dst << src.rdbuf();
 }
 
-/*
- * Used to update the changes made to the disk on graceful termination of the latest session.
- * This ensures that these changes are visible in future sessions.
- */
 Disk::~Disk() {
-  /* An efficient method to copy files */
-  /* Copy Disk Run Copy to Disk */
-  std::ifstream src(DISK_RUN_COPY_PATH, std::ios::binary);
-  std::ofstream dst(DISK_PATH, std::ios::binary);
+    std::ifstream src(DISK_RUN_COPY_PATH,
+                      std::ios::binary | std::ios::ate);
 
-  dst << src.rdbuf();
-  src.close();
-  dst.close();
+    if (!src || src.tellg() != DISK_SIZE) {
+        std::cerr << "Error: Run copy corrupted. Not saving.\n";
+        return;
+    }
+
+    src.seekg(0);
+    std::ofstream dst(DISK_PATH,
+                      std::ios::binary | std::ios::trunc);
+    dst << src.rdbuf();
 }
 
 /*

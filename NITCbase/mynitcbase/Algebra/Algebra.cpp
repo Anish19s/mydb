@@ -16,6 +16,9 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
                     char attr[ATTR_SIZE], int op,
                     char strVal[ATTR_SIZE]) {
 
+  //  printf("DEBUG: srcRel='%s', targetRel='%s', attr='%s', op=%d, value='%s'\n",
+    //    srcRel, targetRel, attr, op, strVal);
+
     int srcRelId = OpenRelTable::getRelId(srcRel);
 
     if (srcRelId == E_RELNOTOPEN) {
@@ -25,15 +28,19 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
     // Get attribute catalog entry for the attribute
     AttrCatEntry attrCatEntry;
 
-    int ret = AttrCacheTable::getAttrCatEntry(
-        srcRelId,
-        attr,
-        &attrCatEntry
-    );
+printf("DEBUG: srcRelId=%d attr='%s'\n", srcRelId, attr);
 
-    if (ret != SUCCESS) {
-        return E_ATTRNOTEXIST;
-    }
+int ret = AttrCacheTable::getAttrCatEntry(
+    srcRelId,
+    attr,
+    &attrCatEntry
+);
+
+// printf("DEBUG: getAttrCatEntry returned %d\n", ret);
+
+if (ret != SUCCESS) {
+    return E_ATTRNOTEXIST;
+}
 
     // Convert strVal into an Attribute
     int type = attrCatEntry.attrType;

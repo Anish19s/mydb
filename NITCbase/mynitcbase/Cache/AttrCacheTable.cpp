@@ -1,4 +1,6 @@
 #include "AttrCacheTable.h"
+#include <cstring>
+#include <cstdio>
 // #include </RelCacheTable.h>
 #include <cstring>
 AttrCacheEntry* AttrCacheTable::attrCache[MAX_OPEN];
@@ -99,6 +101,10 @@ int AttrCacheTable::getAttrCatEntry(
     AttrCacheEntry* curr = attrCache[relId];
 
     while (curr != nullptr) {
+         // printf("CACHE DEBUG: looking for '%s', current='%s', offset=%d\n",
+        //    attrName,
+        //    curr->attrCatEntry.attrName,
+        //    curr->attrCatEntry.offset);
 
         // compare attribute names
         if (strcmp(curr->attrCatEntry.attrName, attrName) == 0) {
