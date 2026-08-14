@@ -1,4 +1,6 @@
 #include "StaticBuffer.h"
+#include "StaticBuffer.h"
+#include "../Disk_Class/Disk.h"
 // the declarations for this class can be found at "StaticBuffer.h"
 
 unsigned char StaticBuffer::blocks[BUFFER_CAPACITY][BLOCK_SIZE];
@@ -17,33 +19,19 @@ At this stage, we are not writing back from the buffer to the disk since we are
 not modifying the buffer. So, we will define an empty destructor for now. In
 subsequent stages, we will implement the write-back functionality here.
 */
-StaticBuffer::~StaticBuffer() {}
+StaticBuffer::~StaticBuffer() {
 
-int StaticBuffer::getFreeBuffer(int blockNum) {
-  if (blockNum < 0 || blockNum > DISK_BLOCKS) {
-    return E_OUTOFBOUND;
-  }
-  int allocatedBuffer=-1;
+    for (int i = 0; i < BUFFER_CAPACITY; i++) {
 
-  // iterate through all the blocks in the StaticBuffer
-  // find the first free block in the buffer (check metainfo)
-  // assign allocatedBuffer = index of the free block
+        if (!metainfo[i].free && metainfo[i].dirty) {
 
-   for (int bufferIndex = 0;bufferIndex<BUFFER_CAPACITY;bufferIndex++) {
-    if(metainfo[bufferIndex].free==true){
-        allocatedBuffer=bufferIndex;
-        break;
+            Disk::writeBlock(
+                blocks[i],
+                metainfo[i].blockNum
+            );
+        }
     }
-  }
-  if (allocatedBuffer == -1)
-    return E_BLOCKNOTINBUFFER;
-
-  metainfo[allocatedBuffer].free = false;
-  metainfo[allocatedBuffer].blockNum = blockNum;
-
-  return allocatedBuffer;
 }
-
 /* Get the buffer index where a particular block is stored
    or E_BLOCKNOTINBUFFER otherwise
 */
@@ -63,4 +51,83 @@ int StaticBuffer::getBufferNum(int blockNum) {
   }
   // if block is not in the buffer
   return E_BLOCKNOTINBUFFER;
+}
+int StaticBuffer::getFreeBuffer(int blockNum) {
+
+    // Check if block number is valid
+    if (blockNum <= 0 || blockNum >= DISK_BLOCKS) {
+        return E_OUTOFBOUND;
+    }
+
+    // Increase timestamp of all occupied buffers
+    for (int i = 0; i < BUFFER_CAPACITY; i++) {
+        if (metainfo[i].free == false) {
+            metainfo[i].timeStamp++;
+        }
+    }
+
+    int bufferNum = -1;
+
+    // Look for a free buffer
+    for (int i = 0; i < BUFFER_CAPACITY; i++) {
+
+        if (metainfo[i].free == true) {
+            bufferNum = i;
+            break;
+        }
+    }
+
+    // No free buffer -> find buffer with largest timestamp
+    if (bufferNum == -1) {
+
+        int maxTimeStamp = -1;
+
+        for (int i = 0; i < BUFFER_CAPACITY; i++) {
+
+            if (metainfo[i].timeStamp > maxTimeStamp) {
+                maxTimeStamp = metainfo[i].timeStamp;
+                bufferNum = i;
+            }
+        }
+
+        // If selected buffer is dirty, write it back to disk
+        if (metainfo[bufferNum].dirty == true) {
+
+            int retVal = Disk::writeBlock(
+                blocks[bufferNum],
+                metainfo[bufferNum].blockNum
+            );
+
+            if (retVal != SUCCESS) {
+                return retVal;
+            }
+        }
+    }
+
+    // Update metadata
+    metainfo[bufferNum].free = false;
+    metainfo[bufferNum].dirty = false;
+    metainfo[bufferNum].blockNum = blockNum;
+    metainfo[bufferNum].timeStamp = 0;
+
+    return bufferNum;
+}
+int StaticBuffer::setDirtyBit(int blockNum) {
+
+    int bufferNum = getBufferNum(blockNum);
+
+    // Block number out of bounds
+    if (bufferNum == E_OUTOFBOUND) {
+        return E_OUTOFBOUND;
+    }
+
+    // Block is not currently in buffer
+    if (bufferNum == E_BLOCKNOTINBUFFER) {
+        return E_BLOCKNOTINBUFFER;
+    }
+
+    // Mark buffer as dirty
+    metainfo[bufferNum].dirty = true;
+
+    return SUCCESS;
 }
