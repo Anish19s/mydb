@@ -1,11 +1,10 @@
 #include "OpenRelTable.h"
-
 #include <cstring>
 #include <cstdlib>
 
+
+
 OpenRelTableMetaInfo OpenRelTable::tableMetaInfo[MAX_OPEN];
-
-
 OpenRelTable::OpenRelTable() {
 
     // Initialize all entries

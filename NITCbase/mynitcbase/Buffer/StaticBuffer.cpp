@@ -11,14 +11,12 @@ StaticBuffer::StaticBuffer() {
   // initialise all blocks as free
   for (int bufferIndex = 0;bufferIndex<BUFFER_CAPACITY;bufferIndex++) {
     metainfo[bufferIndex].free = true;
+    metainfo[bufferIndex].dirty = false;
+    metainfo[bufferIndex].timeStamp = -1;
+    metainfo[bufferIndex].blockNum = -1;
   }
 }
 
-/*
-At this stage, we are not writing back from the buffer to the disk since we are
-not modifying the buffer. So, we will define an empty destructor for now. In
-subsequent stages, we will implement the write-back functionality here.
-*/
 StaticBuffer::~StaticBuffer() {
 
     for (int i = 0; i < BUFFER_CAPACITY; i++) {
