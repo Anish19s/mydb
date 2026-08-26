@@ -28,7 +28,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
     // Get attribute catalog entry for the attribute
     AttrCatEntry attrCatEntry;
 
-printf("DEBUG: srcRelId=%d attr='%s'\n", srcRelId, attr);
+//printf("DEBUG: srcRelId=%d attr='%s'\n", srcRelId, attr);
 
 int ret = AttrCacheTable::getAttrCatEntry(
     srcRelId,
@@ -162,4 +162,79 @@ if (ret != SUCCESS) {
     }
 
     return SUCCESS;
+}
+int Algebra::insert(char relName[ATTR_SIZE], int nAttrs,
+                    char record[][ATTR_SIZE]) {
+
+    // RELATIONCAT and ATTRIBUTECAT cannot be modified
+    if (strcmp(relName, RELCAT_RELNAME) == 0 ||
+        strcmp(relName, ATTRCAT_RELNAME) == 0) {
+
+        return E_NOTPERMITTED;
+    }
+
+    // Get relation id
+    int relId = OpenRelTable::getRelId(relName);
+
+    // Relation is not open
+    if (relId == E_RELNOTOPEN)
+        return E_RELNOTOPEN;
+
+    // Get relation catalog entry
+    RelCatEntry relCatEntry;
+
+    int retVal = RelCacheTable::getRelCatEntry(
+        relId, &relCatEntry
+    );
+
+    if (retVal != SUCCESS)
+        return retVal;
+
+    // Check number of attributes
+    if (relCatEntry.numAttrs != nAttrs)
+        return E_NATTRMISMATCH;
+
+    // Array to store converted attribute values
+    union Attribute recordValues[nAttrs];
+
+    // Convert char[][] to Attribute[]
+    for (int i = 0; i < nAttrs; i++) {
+
+        // Get attribute catalog entry
+        AttrCatEntry attrCatEntry;
+
+        retVal = AttrCacheTable::getAttrCatEntry(
+            relId, i, &attrCatEntry
+        );
+
+        if (retVal != SUCCESS)
+            return retVal;
+
+        // Get attribute type
+        int type = attrCatEntry.attrType;
+
+        if (type == NUMBER) {
+
+            // Check whether the input is a valid number
+            if (isNumber(record[i])) {
+
+                // Convert string to number
+                recordValues[i].nVal = atof(record[i]);
+            }
+            else {
+                return E_ATTRTYPEMISMATCH;
+            }
+        }
+
+        else if (type == STRING) {
+
+            // Copy string into Attribute
+            strcpy(recordValues[i].sVal, record[i]);
+        }
+    }
+
+    // Insert the record
+    retVal = BlockAccess::insert(relId, recordValues);
+
+    return retVal;
 }

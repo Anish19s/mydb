@@ -10,9 +10,11 @@ struct BufferMetaInfo {
   int blockNum;
   int timeStamp;
 };
+class RecBuffer;
 
 class StaticBuffer {
   friend class BlockBuffer;
+  friend class RecBuffer;
 
  private:
   // fields

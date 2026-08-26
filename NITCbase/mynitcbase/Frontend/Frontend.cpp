@@ -2,6 +2,9 @@
 
 #include <cstring>
 #include <iostream>
+int Frontend::insert_into_table_values(char relname[ATTR_SIZE], int attr_count, char attr_values[][ATTR_SIZE]) {
+  return Algebra::insert(relname, attr_count, attr_values);
+}
 
 int Frontend::create_table(char relname[ATTR_SIZE], int no_attrs, char attributes[][ATTR_SIZE],
                            int type_attrs[]) {
@@ -42,11 +45,6 @@ int Frontend::create_index(char relname[ATTR_SIZE], char attrname[ATTR_SIZE]) {
 
 int Frontend::drop_index(char relname[ATTR_SIZE], char attrname[ATTR_SIZE]) {
   // Schema::dropIndex
-  return SUCCESS;
-}
-
-int Frontend::insert_into_table_values(char relname[ATTR_SIZE], int attr_count, char attr_values[][ATTR_SIZE]) {
-  // Algebra::insert
   return SUCCESS;
 }
 

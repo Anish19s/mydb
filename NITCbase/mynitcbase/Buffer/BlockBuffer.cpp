@@ -245,6 +245,9 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum) {
 
     return SUCCESS;
 }
+int BlockBuffer::getBufferNum() {
+    return StaticBuffer::getBufferNum(this->blockNum);
+}
 int BlockBuffer::setBlockType(int blockType) {
 
     unsigned char *bufferPtr;
@@ -271,7 +274,7 @@ int BlockBuffer::setBlockType(int blockType) {
 
     return SUCCESS;
 }
-iint BlockBuffer::getFreeBlock(int blockType) {
+int BlockBuffer::getFreeBlock(int blockType) {
 
     // Find a free block in the disk
     int freeBlock = -1;
@@ -291,7 +294,7 @@ iint BlockBuffer::getFreeBlock(int blockType) {
     blockNum = freeBlock;
 
     // Find a free buffer
-    int ret = StaticBuffer::getFreeBuffer();
+    int ret = StaticBuffer::getFreeBuffer(blockNum);
 
     if (ret<0)
         return ret;
@@ -331,3 +334,37 @@ BlockBuffer::BlockBuffer(char blockType) {
     blockNum = ret;
 }
 RecBuffer::RecBuffer() : BlockBuffer('R') {}
+
+int RecBuffer::setSlotMap(unsigned char *slotMap) {
+
+    unsigned char *bufferPtr;
+
+    int ret = loadBlockAndGetBufferPtr(&bufferPtr);
+
+    if (ret != SUCCESS)
+        return ret;
+
+    HeadInfo head;
+
+    ret = getHeader(&head);
+
+    if (ret != SUCCESS)
+        return ret;
+
+    int numSlots = head.numSlots;
+
+    memcpy(bufferPtr + HEADER_SIZE, slotMap, numSlots);
+
+    int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
+
+    ret = StaticBuffer::setDirtyBit(bufferNum);
+
+    if (ret != SUCCESS)
+        return ret;
+
+    return SUCCESS;
+}
+
+int BlockBuffer::getBlockNum() {
+    return blockNum;
+}

@@ -437,68 +437,6 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
 
 
 /**************************************************************/
-
-
-int OpenRelTable::closeRel(int relId) {
-
-    // Catalogs cannot be closed
-
-    if (relId == RELCAT_RELID ||
-        relId == ATTRCAT_RELID) {
-
-        return E_NOTPERMITTED;
-    }
-
-
-    // Check relId
-
-    if (relId < 0 || relId >= MAX_OPEN) {
-        return E_OUTOFBOUND;
-    }
-
-
-    // Check whether relation is open
-
-    if (tableMetaInfo[relId].free) {
-        return E_RELNOTOPEN;
-    }
-
-
-    // Free relation cache
-
-    if (RelCacheTable::relCache[relId] != nullptr) {
-
-        free(RelCacheTable::relCache[relId]);
-
-        RelCacheTable::relCache[relId] = nullptr;
-    }
-
-
-    // Free attribute cache linked list
-
-    AttrCacheEntry *entry =
-        AttrCacheTable::attrCache[relId];
-
-    while (entry != nullptr) {
-
-        AttrCacheEntry *temp = entry;
-
-        entry = entry->next;
-
-        free(temp);
-    }
-
-    AttrCacheTable::attrCache[relId] = nullptr;
-
-
-    // Mark entry as free
-
-    tableMetaInfo[relId].free = true;
-    tableMetaInfo[relId].relName[0] = '\0';
-
-
-    return SUCCESS;
-}
 int OpenRelTable::closeRel(int relId) {
 
     // Catalogs cannot be closed

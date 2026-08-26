@@ -52,6 +52,7 @@ class BlockBuffer {
   BlockBuffer(char blockType);
   BlockBuffer(int blockNum);
   int getBlockNum();
+  int getBufferNum();
   int getHeader(struct HeadInfo *head);
   int setHeader(struct HeadInfo *head);
   void releaseBlock();
