@@ -96,3 +96,35 @@ int RelCacheTable::resetSearchIndex(int relId) {
 
     return setSearchIndex(relId, &searchIndex);
 }
+int RelCacheTable::setRelCatEntry(int relId, RelCatEntry *relCatBuf) {
+
+    // Check if relId is outside valid range
+    if (relId < 0 || relId >= MAX_OPEN) {
+        return E_OUTOFBOUND;
+    }
+
+    // Check if the relation cache entry is free
+    if (relCache[relId] == nullptr) {
+        return E_RELNOTOPEN;
+    }
+
+    // Copy the relation catalog entry
+    relCache[relId]->relCatEntry = *relCatBuf;
+
+    // Mark the cache entry as dirty
+    relCache[relId]->dirty = true;
+
+    return SUCCESS;
+}
+void RelCacheTable::relCatEntryToRecord(
+    RelCatEntry *relCatBuf,
+    union Attribute record[RELCAT_NO_ATTRS]) {
+
+    strcpy(record[0].sVal, relCatBuf->relName);
+
+    record[1].nVal = relCatBuf->numAttrs;
+    record[2].nVal = relCatBuf->numRecs;
+    record[3].nVal = relCatBuf->firstBlk;
+    record[4].nVal = relCatBuf->lastBlk;
+    record[5].nVal = relCatBuf->numSlotsPerBlk;
+}
