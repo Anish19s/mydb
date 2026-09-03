@@ -11,21 +11,13 @@ struct BufferMetaInfo StaticBuffer::metainfo[BUFFER_CAPACITY];
 StaticBuffer::StaticBuffer() {
 
     // ----------------------------------------------------
-    // Copy block allocation map from disk into buffer
+    // Copy block allocation map from disk into blockAllocMap
     // Block allocation map occupies disk blocks 0 to 3
     // ----------------------------------------------------
 
     for (int i = 0; i < 4; i++) {
-        Disk::readBlock(blocks[i], i);
+        Disk::readBlock(blockAllocMap + i * BLOCK_SIZE, i);
     }
-
-    // Copy the 4 blocks into blockAllocMap
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < BLOCK_SIZE; j++) {
-            blockAllocMap[i * BLOCK_SIZE + j] = blocks[i][j];
-        }
-    }
-
 
     // ----------------------------------------------------
     // Initialise metadata of all buffer blocks
@@ -46,28 +38,15 @@ StaticBuffer::StaticBuffer() {
 StaticBuffer::~StaticBuffer() {
 
     // ----------------------------------------------------
-    // Copy block allocation map back into buffer
+    // 1. Write block allocation map blocks back to disk
     // ----------------------------------------------------
 
     for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < BLOCK_SIZE; j++) {
-            blocks[i][j] =
-                blockAllocMap[i * BLOCK_SIZE + j];
-        }
+        Disk::writeBlock(blockAllocMap + i * BLOCK_SIZE, i);
     }
 
-
     // ----------------------------------------------------
-    // Write block allocation map blocks back to disk
-    // ----------------------------------------------------
-
-    for (int i = 0; i < 4; i++) {
-        Disk::writeBlock(blocks[i], i);
-    }
-
-
-    // ----------------------------------------------------
-    // Write back all dirty blocks currently in buffer
+    // 2. Write back all dirty blocks currently in buffer
     // ----------------------------------------------------
 
     for (int i = 0; i < BUFFER_CAPACITY; i++) {
@@ -80,6 +59,13 @@ StaticBuffer::~StaticBuffer() {
             );
         }
     }
+}
+
+int StaticBuffer::getStaticBlockType(int blockNum) {
+    if (blockNum < 0 || blockNum >= DISK_BLOCKS) {
+        return E_OUTOFBOUND;
+    }
+    return (int)blockAllocMap[blockNum];
 }
 
 

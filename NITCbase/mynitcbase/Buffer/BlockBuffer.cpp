@@ -185,17 +185,18 @@ int BlockBuffer::setHeader(struct HeadInfo *head) {
     if (ret != SUCCESS)
         return ret;
 
-    // Cast bufferPtr to HeadInfo*
-    struct HeadInfo *bufferHeader = (struct HeadInfo *)bufferPtr;
-
-    // Copy the header fields except reserved
-    bufferHeader->blockType = head->blockType;
-    bufferHeader->numSlots = head->numSlots;
-    bufferHeader->numEntries = head->numEntries;
+    // Populate the header fields in the buffer
+    memcpy(bufferPtr + 0,  &head->blockType, 4);
+    memcpy(bufferPtr + 4,  &head->pblock,    4);
+    memcpy(bufferPtr + 8,  &head->lblock,    4);
+    memcpy(bufferPtr + 12, &head->rblock,    4);
+    memcpy(bufferPtr + 16, &head->numEntries, 4);
+    memcpy(bufferPtr + 20, &head->numAttrs,   4);
+    memcpy(bufferPtr + 24, &head->numSlots,   4);
+    memcpy(bufferPtr + 28, head->reserved,    4);
 
     // Mark the buffer block as dirty
-    int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
-    ret = StaticBuffer::setDirtyBit(bufferNum);
+    ret = StaticBuffer::setDirtyBit(this->blockNum);
 
     if (ret != SUCCESS)
         return ret;
@@ -266,8 +267,7 @@ int BlockBuffer::setBlockType(int blockType) {
     StaticBuffer::blockAllocMap[this->blockNum] = blockType;
 
     // Update dirty bit
-    int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
-    ret = StaticBuffer::setDirtyBit(bufferNum);
+    ret = StaticBuffer::setDirtyBit(this->blockNum);
 
     if (ret != SUCCESS)
         return ret;
@@ -280,7 +280,7 @@ int BlockBuffer::getFreeBlock(int blockType) {
     int freeBlock = -1;
 
     for (int i = 0; i < DISK_BLOCKS; i++) {
-        if (StaticBuffer::blockAllocMap[i] == FREE) {
+        if (StaticBuffer::blockAllocMap[i] == UNUSED_BLK) {
             freeBlock = i;
             break;
         }
@@ -296,7 +296,7 @@ int BlockBuffer::getFreeBlock(int blockType) {
     // Find a free buffer
     int ret = StaticBuffer::getFreeBuffer(blockNum);
 
-    if (ret<0)
+    if (ret < 0)
         return ret;
 
     int bufferNum = ret;
@@ -304,12 +304,14 @@ int BlockBuffer::getFreeBlock(int blockType) {
     // Initialize the block header
     HeadInfo head;
 
+    head.blockType = blockType;
     head.pblock = -1;
     head.lblock = -1;
     head.rblock = -1;
     head.numEntries = 0;
     head.numAttrs = 0;
     head.numSlots = 0;
+    memset(head.reserved, 0, sizeof(head.reserved));
 
     ret = setHeader(&head);
 
@@ -326,8 +328,13 @@ int BlockBuffer::getFreeBlock(int blockType) {
 }
 BlockBuffer::BlockBuffer(char blockType) {
 
+    // Map character type to integer BlockType
+    int type = (blockType == 'R') ? REC :
+               (blockType == 'I') ? IND_INTERNAL :
+               (blockType == 'L') ? IND_LEAF : UNUSED_BLK;
+
     // Allocate a free block on disk and a free buffer in memory
-    int ret = getFreeBlock(blockType);
+    int ret = getFreeBlock(type);
 
     // If allocation succeeded, ret is the allocated block number.
     // If it failed, ret is the error code.
@@ -355,9 +362,7 @@ int RecBuffer::setSlotMap(unsigned char *slotMap) {
 
     memcpy(bufferPtr + HEADER_SIZE, slotMap, numSlots);
 
-    int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
-
-    ret = StaticBuffer::setDirtyBit(bufferNum);
+    ret = StaticBuffer::setDirtyBit(this->blockNum);
 
     if (ret != SUCCESS)
         return ret;

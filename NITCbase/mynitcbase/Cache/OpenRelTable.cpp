@@ -325,7 +325,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
 
     // Read relation catalog record
 
-    RecBuffer relCatBlock(RELCAT_BLOCK);
+    RecBuffer relCatBlock(recId.block);
 
     Attribute relCatRecord[RELCAT_NO_ATTRS];
 
