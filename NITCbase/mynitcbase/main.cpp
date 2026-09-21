@@ -40,6 +40,10 @@ int main(int argc, char *argv[]) {
   //     }
   //   }
   // }
+
+
+  
+// ==================BLOCK ALLOC MAP========================
   
   // unsigned char buffer3[BLOCK_SIZE];
 
