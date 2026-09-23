@@ -751,3 +751,87 @@ int BlockAccess::deleteRelation(char *relName) {
 
     return SUCCESS;
 }
+int BlockAccess::project(int relId, Attribute *record) {
+    // get the previous search index of the relation relId from the relation
+    // cache
+    RecId prevRecId = RelCacheTable::getSearchIndex(relId);
+
+    // declare block and slot
+    int block, slot;
+
+    /*
+     * If the current search index is invalid, start from the
+     * first record of the relation.
+     */
+    if (prevRecId.block == -1 && prevRecId.slot == -1)
+    {
+        // get relation catalog entry
+        RelCatEntry relCatEntry;
+        RelCacheTable::getRelCatEntry(relId, &relCatEntry);
+
+        // start from first record block
+        block = relCatEntry.firstBlock;
+        slot = 0;
+    }
+    else
+    {
+        // continue from the record after the previous record
+        block = prevRecId.block;
+        slot = prevRecId.slot + 1;
+    }
+
+    /*
+     * Find the next occupied slot.
+     */
+    while (block != -1)
+    {
+        // create RecBuffer object for the current block
+        RecBuffer recBuffer(block);
+
+        // get block header
+        HeadInfo head;
+        recBuffer.getHeader(&head);
+
+        // get slot map
+        unsigned char slotMap[head.numSlots];
+        recBuffer.getSlotMap(slotMap);
+
+        // if all slots in this block have been checked
+        if (slot >= head.numSlots)
+        {
+            // move to the next block
+            block = head.rblock;
+            slot = 0;
+        }
+        else if (slotMap[slot] == SLOT_UNOCCUPIED)
+        {
+            // current slot is free, move to next slot
+            slot++;
+        }
+        else
+        {
+            // occupied slot found
+            break;
+        }
+    }
+
+    // no record found
+    if (block == -1)
+    {
+        return E_NOTFOUND;
+    }
+
+    // store the record id of the record found
+    RecId nextRecId{block, slot};
+
+    // update the search index
+    RelCacheTable::setSearchIndex(relId, nextRecId);
+
+    // create RecBuffer for the record
+    RecBuffer recBuffer(nextRecId);
+
+    // copy the record into the caller-provided buffer
+    recBuffer.getRecord(record);
+
+    return SUCCESS;
+}
