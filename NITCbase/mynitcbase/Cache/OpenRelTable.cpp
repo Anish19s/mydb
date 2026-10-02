@@ -195,49 +195,7 @@ OpenRelTable::OpenRelTable() {
 /**************************************************************/
 
 
-OpenRelTable::~OpenRelTable() {
 
-    // Close all open user relations
-    for (int i = 2; i < MAX_OPEN; i++) {
-
-        if (!tableMetaInfo[i].free) {
-            OpenRelTable::closeRel(i);
-        }
-    }
-
-
-    // Free relation cache entries for catalogs
-
-    if (RelCacheTable::relCache[RELCAT_RELID] != nullptr) {
-        free(RelCacheTable::relCache[RELCAT_RELID]);
-        RelCacheTable::relCache[RELCAT_RELID] = nullptr;
-    }
-
-    if (RelCacheTable::relCache[ATTRCAT_RELID] != nullptr) {
-        free(RelCacheTable::relCache[ATTRCAT_RELID]);
-        RelCacheTable::relCache[ATTRCAT_RELID] = nullptr;
-    }
-
-
-    // Free attribute cache lists for catalogs
-
-    for (int i = 0; i < 2; i++) {
-
-        AttrCacheEntry *entry =
-            AttrCacheTable::attrCache[i];
-
-        while (entry != nullptr) {
-
-            AttrCacheEntry *temp = entry;
-
-            entry = entry->next;
-
-            free(temp);
-        }
-
-        AttrCacheTable::attrCache[i] = nullptr;
-    }
-}
 
 
 /**************************************************************/
@@ -515,4 +473,113 @@ int OpenRelTable::closeRel(int relId) {
     tableMetaInfo[relId].relName[0] = '\0';
 
     return SUCCESS;
+}
+OpenRelTable::~OpenRelTable() {
+
+    /************ Closing all user relations ************/
+
+    for (int i = 2; i < MAX_OPEN; i++) {
+
+        if (tableMetaInfo[i].free == false) {
+
+            // Close the relation
+            closeRel(i);
+        }
+    }
+
+
+    /************ Closing the catalog relations in the relation cache ************/
+
+    // Releasing the relation cache entry of the attribute catalog
+
+    if (RelCacheTable::relCache[ATTRCAT_RELID]->dirty) {
+
+        // Get the relation catalog entry
+        RelCatEntry relCatEntry =
+            RelCacheTable::relCache[ATTRCAT_RELID]->relCatEntry;
+
+        // Convert RelCatEntry to a record
+        Attribute relCatRecord[RELCAT_NO_ATTRS];
+
+        RelCacheTable::relCatEntryToRecord(
+            &relCatEntry,
+            relCatRecord
+        );
+
+        // Get the RecId
+        RecId recId =
+            RelCacheTable::relCache[ATTRCAT_RELID]->recId;
+
+        // Write back to the relation catalog
+        RecBuffer relCatBlock(recId.block);
+
+        relCatBlock.setRecord(relCatRecord, recId.slot);
+    }
+
+    // Free memory allocated for this RelCacheEntry
+    free(RelCacheTable::relCache[ATTRCAT_RELID]);
+    RelCacheTable::relCache[ATTRCAT_RELID] = nullptr;
+
+
+    // Releasing the relation cache entry of the relation catalog
+
+    if (RelCacheTable::relCache[RELCAT_RELID]->dirty) {
+
+        // Get the relation catalog entry
+        RelCatEntry relCatEntry =
+            RelCacheTable::relCache[RELCAT_RELID]->relCatEntry;
+
+        // Convert RelCatEntry to a record
+        Attribute relCatRecord[RELCAT_NO_ATTRS];
+
+        RelCacheTable::relCatEntryToRecord(
+            &relCatEntry,
+            relCatRecord
+        );
+
+        // Get the RecId
+        RecId recId =
+            RelCacheTable::relCache[RELCAT_RELID]->recId;
+
+        // Write back to the relation catalog
+        RecBuffer relCatBlock(recId.block);
+
+        relCatBlock.setRecord(relCatRecord, recId.slot);
+    }
+
+    // Free memory allocated for this RelCacheEntry
+    free(RelCacheTable::relCache[RELCAT_RELID]);
+    RelCacheTable::relCache[RELCAT_RELID] = nullptr;
+
+
+    /************ Freeing Attribute Cache entries ************/
+
+    // Free attribute cache entries of RELCAT
+    AttrCacheEntry *attrCatEntry =
+        AttrCacheTable::attrCache[RELCAT_RELID];
+
+    while (attrCatEntry != nullptr) {
+
+        AttrCacheEntry *temp = attrCatEntry;
+        attrCatEntry = attrCatEntry->next;
+
+        free(temp);
+    }
+
+    AttrCacheTable::attrCache[RELCAT_RELID] = nullptr;
+
+
+    // Free attribute cache entries of ATTRCAT
+    attrCatEntry =
+        AttrCacheTable::attrCache[ATTRCAT_RELID];
+
+    while (attrCatEntry != nullptr) {
+
+        AttrCacheEntry *temp = attrCatEntry;
+        attrCatEntry = attrCatEntry->next;
+
+        free(temp);
+    }
+
+    AttrCacheTable::attrCache[ATTRCAT_RELID] = nullptr;
 }

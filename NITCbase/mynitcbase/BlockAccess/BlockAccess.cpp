@@ -752,9 +752,12 @@ int BlockAccess::deleteRelation(char *relName) {
     return SUCCESS;
 }
 int BlockAccess::project(int relId, Attribute *record) {
-    // get the previous search index of the relation relId from the relation
-    // cache
-    RecId prevRecId = RelCacheTable::getSearchIndex(relId);
+    // get the previous search index of the relation relId from the relation cache
+    RecId prevRecId;
+    int ret = RelCacheTable::getSearchIndex(relId, &prevRecId);
+
+    if (ret != SUCCESS)
+        return ret;
 
     // declare block and slot
     int block, slot;
@@ -767,10 +770,12 @@ int BlockAccess::project(int relId, Attribute *record) {
     {
         // get relation catalog entry
         RelCatEntry relCatEntry;
-        RelCacheTable::getRelCatEntry(relId, &relCatEntry);
+        ret = RelCacheTable::getRelCatEntry(relId, &relCatEntry);
+        if (ret != SUCCESS)
+            return ret;
 
         // start from first record block
-        block = relCatEntry.firstBlock;
+        block = relCatEntry.firstBlk;
         slot = 0;
     }
     else
@@ -790,11 +795,15 @@ int BlockAccess::project(int relId, Attribute *record) {
 
         // get block header
         HeadInfo head;
-        recBuffer.getHeader(&head);
+        ret = recBuffer.getHeader(&head);
+        if (ret != SUCCESS)
+            return ret;
 
         // get slot map
         unsigned char slotMap[head.numSlots];
-        recBuffer.getSlotMap(slotMap);
+        ret = recBuffer.getSlotMap(slotMap);
+        if (ret != SUCCESS)
+            return ret;
 
         // if all slots in this block have been checked
         if (slot >= head.numSlots)
@@ -825,13 +834,13 @@ int BlockAccess::project(int relId, Attribute *record) {
     RecId nextRecId{block, slot};
 
     // update the search index
-    RelCacheTable::setSearchIndex(relId, nextRecId);
+    RelCacheTable::setSearchIndex(relId, &nextRecId);
 
     // create RecBuffer for the record
-    RecBuffer recBuffer(nextRecId);
+    RecBuffer recBuffer(nextRecId.block);
 
     // copy the record into the caller-provided buffer
-    recBuffer.getRecord(record);
+    ret = recBuffer.getRecord(record, nextRecId.slot);
 
-    return SUCCESS;
+    return ret;
 }

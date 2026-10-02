@@ -50,26 +50,54 @@ int Frontend::drop_index(char relname[ATTR_SIZE], char attrname[ATTR_SIZE]) {
 
 int Frontend::select_from_table(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE]) {
   // Algebra::project
-  return SUCCESS;
+
+  return Algebra::project(relname_source, relname_target);
 }
 
 int Frontend::select_attrlist_from_table(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE],
                                          int attr_count, char attr_list[][ATTR_SIZE]) {
   // Algebra::project
-  return SUCCESS;
-}
-
+  return Algebra::project(relname_source, relname_target,
+                            attr_count, attr_list);
+ }
 int Frontend::select_from_table_where(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE],
                                       char attribute[ATTR_SIZE], int op, char value[ATTR_SIZE]) {
   // Algebra::select
-  return Algebra::select(relname_source, relname_target, attribute, op, value);
+  return Algebra::select(relname_source, relname_target,
+                           attribute, op, value);
 }
 
 int Frontend::select_attrlist_from_table_where(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE],
                                                int attr_count, char attr_list[][ATTR_SIZE],
                                                char attribute[ATTR_SIZE], int op, char value[ATTR_SIZE]) {
   // Algebra::select + Algebra::project??
-  return SUCCESS;
+   // Perform selection and create TEMP
+    int ret = Algebra::select(relname_source, (char *)TEMP,
+                              attribute, op, value);
+
+    if (ret != SUCCESS)
+        return ret;
+
+    // Open TEMP relation
+    int tempRelId = OpenRelTable::openRel((char *)TEMP);
+
+    if (tempRelId < 0) {
+        Schema::deleteRel((char *)TEMP);
+        return tempRelId;
+    }
+
+    // Perform projection on TEMP
+    ret = Algebra::project((char *)TEMP, relname_target,
+                           attr_count, attr_list);
+
+    // Close TEMP relation
+    OpenRelTable::closeRel(tempRelId);
+
+    // Delete TEMP relation
+    Schema::deleteRel((char *)TEMP);
+
+    // Return result
+    return ret;
 }
 
 int Frontend::select_from_join_where(char relname_source_one[ATTR_SIZE], char relname_source_two[ATTR_SIZE],
