@@ -844,3 +844,49 @@ int BlockAccess::project(int relId, Attribute *record) {
 
     return ret;
 }
+int BlockAccess::search(int relId, Attribute *record, char attrName[ATTR_SIZE],
+                        Attribute attrVal, int op) {
+
+    // Declare a variable called recId to store the searched record
+    RecId recId;
+
+    // Get the attribute catalog entry corresponding to relId and attrName
+    AttrCatEntry attrCatEntry;
+    int ret = AttrCacheTable::getAttrCatEntry(relId, attrName, &attrCatEntry);
+
+    // If the attribute does not exist / relation is invalid, return the error
+    if (ret != SUCCESS) {
+        return ret;
+    }
+
+    // Get root block of the B+ tree
+    int rootBlock = attrCatEntry.rootBlock;
+
+    // If no index exists for this attribute, use linear search
+    if (rootBlock == -1) {
+
+        recId = BlockAccess::linearSearch(relId, attrName, attrVal, op);
+
+    }
+    // Otherwise, use B+ tree search
+    else {
+
+        recId = BPlusTree::bPlusSearch(relId, attrName, attrVal, op);
+    }
+
+    // No record satisfying the condition was found
+    if (recId.block == -1 && recId.slot == -1) {
+        return E_NOTFOUND;
+    }
+
+    // Fetch the actual record using the RecId
+    RecBuffer recBuffer(recId.block);
+
+    ret = recBuffer.getRecord(record, recId.slot);
+
+    if (ret != SUCCESS) {
+        return ret;
+    }
+
+    return SUCCESS;
+}
