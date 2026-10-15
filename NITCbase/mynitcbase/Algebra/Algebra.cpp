@@ -89,6 +89,7 @@ int Algebra::insert(char relName[ATTR_SIZE], int nAttrs,
     return retVal;
 }
 
+
 int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
                     char attr[ATTR_SIZE], int op,
                     char strVal[ATTR_SIZE]) {
@@ -101,8 +102,9 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
 
     // Get attribute catalog entry
     AttrCatEntry attrCatEntry;
-    int ret = AttrCacheTable::getAttrCatEntry(srcRelId, attr,
-                                               &attrCatEntry);
+    int ret = AttrCacheTable::getAttrCatEntry(
+        srcRelId, attr, &attrCatEntry
+    );
 
     if (ret != SUCCESS)
         return E_ATTRNOTEXIST;
@@ -124,6 +126,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
         strcpy(attrVal.sVal, strVal);
     }
 
+    // Get source relation catalog entry
     RelCatEntry relCatEntry;
     ret = RelCacheTable::getRelCatEntry(srcRelId, &relCatEntry);
 
@@ -132,38 +135,51 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
 
     int src_nAttrs = relCatEntry.numAttrs;
 
-    if (strcasecmp(targetRel, "null") == 0 || strcmp(targetRel, "") == 0) {
-        /*
-         * Print attribute names
-         */
+    /*** Print selected records if targetRel is null ***/
+
+    if (strcasecmp(targetRel, "null") == 0 ||
+        strcmp(targetRel, "") == 0) {
+
+        // Print attribute names
         printf("|");
 
         for (int i = 0; i < src_nAttrs; ++i) {
             AttrCatEntry entry;
-            ret = AttrCacheTable::getAttrCatEntry(srcRelId, i, &entry);
-            if (ret != SUCCESS) {
+
+            ret = AttrCacheTable::getAttrCatEntry(
+                srcRelId, i, &entry
+            );
+
+            if (ret != SUCCESS)
                 return ret;
-            }
+
             printf(" %s |", entry.attrName);
         }
 
         printf("\n");
 
-        // Reset search index
+        // Reset search indices
         RelCacheTable::resetSearchIndex(srcRelId);
         AttrCacheTable::resetSearchIndex(srcRelId, attr);
 
         Attribute record[src_nAttrs];
 
-        while (BlockAccess::search(srcRelId, record, attr, attrVal, op) == SUCCESS) {
+        // Search matching records
+        while (BlockAccess::search(
+                   srcRelId, record, attr, attrVal, op
+               ) == SUCCESS) {
+
             printf("|");
 
             for (int i = 0; i < src_nAttrs; ++i) {
                 AttrCatEntry entry;
-                ret = AttrCacheTable::getAttrCatEntry(srcRelId, i, &entry);
-                if (ret != SUCCESS) {
+
+                ret = AttrCacheTable::getAttrCatEntry(
+                    srcRelId, i, &entry
+                );
+
+                if (ret != SUCCESS)
                     return ret;
-                }
 
                 if (entry.attrType == NUMBER) {
                     printf(" %g |", record[entry.offset].nVal);
@@ -184,10 +200,12 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
     char attr_names[src_nAttrs][ATTR_SIZE];
     int attr_types[src_nAttrs];
 
-    for (int i = 0; i < src_nAttrs; i++) {
+    for (int i = 0; i < src_nAttrs; ++i) {
         AttrCatEntry entry;
 
-        ret = AttrCacheTable::getAttrCatEntry(srcRelId, i, &entry);
+        ret = AttrCacheTable::getAttrCatEntry(
+            srcRelId, i, &entry
+        );
 
         if (ret != SUCCESS)
             return ret;
@@ -197,8 +215,9 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
     }
 
     // Create target relation
-    ret = Schema::createRel(targetRel, src_nAttrs,
-                            attr_names, attr_types);
+    ret = Schema::createRel(
+        targetRel, src_nAttrs, attr_names, attr_types
+    );
 
     if (ret != SUCCESS)
         return ret;
@@ -215,13 +234,14 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
 
     Attribute record[src_nAttrs];
 
-    // Reset search indices
+    // Reset relation and attribute search indices
     RelCacheTable::resetSearchIndex(srcRelId);
     AttrCacheTable::resetSearchIndex(srcRelId, attr);
 
-    // Search and insert matching records
-    while (BlockAccess::search(srcRelId, record, attr,
-                               attrVal, op) == SUCCESS) {
+    // Search matching records and insert into target relation
+    while (BlockAccess::search(
+               srcRelId, record, attr, attrVal, op
+           ) == SUCCESS) {
 
         ret = BlockAccess::insert(targetRelId, record);
 
@@ -237,6 +257,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
 
     return SUCCESS;
 }
+
 
 int Algebra::project(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE]) {
 
