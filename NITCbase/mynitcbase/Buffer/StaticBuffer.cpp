@@ -62,12 +62,13 @@ StaticBuffer::~StaticBuffer() {
 }
 
 int StaticBuffer::getStaticBlockType(int blockNum) {
+
     if (blockNum < 0 || blockNum >= DISK_BLOCKS) {
         return E_OUTOFBOUND;
     }
+
     return (int)blockAllocMap[blockNum];
 }
-
 
 /*
    Get the buffer index where a particular block is stored

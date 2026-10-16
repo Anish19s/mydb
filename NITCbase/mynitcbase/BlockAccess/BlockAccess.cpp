@@ -639,27 +639,7 @@ int BlockAccess::insert(int relId, Attribute *record) {
 
     return SUCCESS;
 }
-int BlockAccess::search(int relId, Attribute *record,
-                        char attrName[ATTR_SIZE],
-                        Attribute attrVal, int op) {
 
-    // Search for the record ID
-    RecId recId;
-
-    recId = linearSearch(relId, attrName, attrVal, op);
-
-    // If no record was found
-    if (recId.block == -1 && recId.slot == -1) {
-        return E_NOTFOUND;
-    }
-
-    // Fetch the record corresponding to recId
-    RecBuffer recBuffer(recId.block);
-
-    recBuffer.getRecord(record, recId.slot);
-
-    return SUCCESS;
-}
 
 int BlockAccess::deleteRelation(char *relName) {
     // System catalogs cannot be deleted
