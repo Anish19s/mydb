@@ -401,3 +401,63 @@ void BlockBuffer::releaseBlock() {
     // Invalidate this object's block number
     blockNum = INVALID_BLOCKNUM;
 }
+IndBuffer::IndBuffer(char blockType) : BlockBuffer(blockType) {}
+// call the corresponding parent constructor
+IndBuffer::IndBuffer(int blockNum) : BlockBuffer(blockNum){}
+
+IndInternal::IndInternal() : IndBuffer('I'){}
+// call the corresponding parent constructor
+// 'I' used to denote IndInternal.
+IndInternal::IndInternal(int blockNum) : IndBuffer(blockNum){}
+// call the corresponding parent constructor
+IndLeaf::IndLeaf() : IndBuffer('L'){} // this is the way to call parent non-default constructor.
+                      // 'L' used to denote IndLeaf.
+//this is the way to call parent non-default constructor.
+IndLeaf::IndLeaf(int blockNum) : IndBuffer(blockNum){}
+int IndInternal::getEntry(void *ptr, int indexNum) {
+
+    if (indexNum < 0 || indexNum >= MAX_KEYS_INTERNAL) {
+        return E_OUTOFBOUND;
+    }
+
+    unsigned char *bufferPtr;
+
+    int ret = loadBlockAndGetBufferPtr(&bufferPtr);
+
+    if (ret != SUCCESS) {
+        return ret;
+    }
+
+    struct InternalEntry *internalEntry =
+        (struct InternalEntry *)ptr;
+
+    unsigned char *entryPtr =
+        bufferPtr + HEADER_SIZE + (indexNum * 20);
+
+    memcpy(&(internalEntry->lChild), entryPtr, sizeof(int32_t));
+    memcpy(&(internalEntry->attrVal), entryPtr + 4, sizeof(Attribute));
+    memcpy(&(internalEntry->rChild), entryPtr + 20, sizeof(int32_t));
+
+    return SUCCESS;
+}
+int IndLeaf::getEntry(void *ptr, int indexNum) {
+
+    if (indexNum < 0 || indexNum >= MAX_KEYS_LEAF) {
+        return E_OUTOFBOUND;
+    }
+
+    unsigned char *bufferPtr;
+
+    int ret = loadBlockAndGetBufferPtr(&bufferPtr);
+
+    if (ret != SUCCESS) {
+        return ret;
+    }
+
+    unsigned char *entryPtr =
+        bufferPtr + HEADER_SIZE + (indexNum * LEAF_ENTRY_SIZE);
+
+    memcpy((struct Index *)ptr, entryPtr, LEAF_ENTRY_SIZE);
+
+    return SUCCESS;
+}
