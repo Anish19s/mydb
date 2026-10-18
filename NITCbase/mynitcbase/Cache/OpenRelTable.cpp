@@ -583,3 +583,4 @@ OpenRelTable::~OpenRelTable() {
 
     AttrCacheTable::attrCache[ATTRCAT_RELID] = nullptr;
 }
+
