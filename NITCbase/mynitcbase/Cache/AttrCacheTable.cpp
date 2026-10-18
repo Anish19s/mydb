@@ -121,35 +121,59 @@ int AttrCacheTable::getAttrCatEntry(
     return E_ATTRNOTEXIST;
 }
 
-int AttrCacheTable::setAttrCatEntry(int relId, char attrName[ATTR_SIZE], AttrCatEntry *attrCatBuf) {
-    if (relId < 0 || relId >= MAX_OPEN)
+int AttrCacheTable::setAttrCatEntry(
+    int relId,
+    char attrName[ATTR_SIZE],
+    AttrCatEntry *attrCatBuf
+) {
+    if (relId < 0 || relId >= MAX_OPEN) {
         return E_OUTOFBOUND;
-    if (attrCache[relId] == nullptr)
-        return E_RELNOTOPEN;
+    }
 
-    for (AttrCacheEntry* entry = attrCache[relId]; entry != nullptr; entry = entry->next) {
-        if (strcmp(entry->attrCatEntry.attrName, attrName) == 0) {
-            entry->attrCatEntry = *attrCatBuf;
-            entry->dirty = true;
+    if (attrCache[relId] == nullptr) {
+        return E_RELNOTOPEN;
+    }
+
+    AttrCacheEntry *curr = attrCache[relId];
+
+    while (curr != nullptr) {
+        if (strcmp(curr->attrCatEntry.attrName, attrName) == 0) {
+            curr->attrCatEntry = *attrCatBuf;
+            curr->dirty = true;
             return SUCCESS;
         }
+
+        curr = curr->next;
     }
+
     return E_ATTRNOTEXIST;
 }
 
-int AttrCacheTable::setAttrCatEntry(int relId, int attrOffset, AttrCatEntry *attrCatBuf) {
-    if (relId < 0 || relId >= MAX_OPEN)
+int AttrCacheTable::setAttrCatEntry(
+    int relId,
+    int attrOffset,
+    AttrCatEntry *attrCatBuf
+) {
+    if (relId < 0 || relId >= MAX_OPEN) {
         return E_OUTOFBOUND;
-    if (attrCache[relId] == nullptr)
-        return E_RELNOTOPEN;
+    }
 
-    for (AttrCacheEntry* entry = attrCache[relId]; entry != nullptr; entry = entry->next) {
-        if (entry->attrCatEntry.offset == attrOffset) {
-            entry->attrCatEntry = *attrCatBuf;
-            entry->dirty = true;
+    if (attrCache[relId] == nullptr) {
+        return E_RELNOTOPEN;
+    }
+
+    AttrCacheEntry *curr = attrCache[relId];
+
+    while (curr != nullptr) {
+        if (curr->attrCatEntry.offset == attrOffset) {
+            curr->attrCatEntry = *attrCatBuf;
+            curr->dirty = true;
             return SUCCESS;
         }
+
+        curr = curr->next;
     }
+
     return E_ATTRNOTEXIST;
 }
 
