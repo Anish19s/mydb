@@ -213,3 +213,66 @@ int Schema::deleteRel(char *relName) {
 
     return retVal;
 }
+int Schema::createIndex(char relName[ATTR_SIZE], char attrName[ATTR_SIZE]) {
+
+    // Do not allow indexes on Relation Catalog or Attribute Catalog
+    if (strcmp(relName, RELCAT_RELNAME) == 0 ||
+        strcmp(relName, ATTRCAT_RELNAME) == 0) {
+        return E_NOTPERMITTED;
+    }
+
+    // Get the relation ID
+    int relId = OpenRelTable::getRelId(relName);
+
+    // Check if the relation is open
+    if (relId == E_RELNOTOPEN) {
+        return E_RELNOTOPEN;
+    }
+
+    // Create the B+ tree index
+    return BPlusTree::bPlusCreate(relId, attrName);
+}
+int Schema::dropIndex(char relName[ATTR_SIZE], char attrName[ATTR_SIZE]) {
+
+    // Do not permit dropping indexes on catalog relations
+    if (strcmp(relName, RELCAT_RELNAME) == 0 ||
+        strcmp(relName, ATTRCAT_RELNAME) == 0) {
+        return E_NOTPERMITTED;
+    }
+
+    // Get the relation ID
+    int relId = OpenRelTable::getRelId(relName);
+
+    if (relId == E_RELNOTOPEN) {
+        return E_RELNOTOPEN;
+    }
+
+    // Get the attribute catalog entry
+    AttrCatEntry attrCatEntry;
+
+    int ret = AttrCacheTable::getAttrCatEntry(
+        relId, attrName, &attrCatEntry
+    );
+
+    if (ret != SUCCESS) {
+        return E_ATTRNOTEXIST;
+    }
+
+    // Get the root block of the B+ tree
+    int rootBlock = attrCatEntry.rootBlock;
+
+    // Check whether an index exists
+    if (rootBlock == -1) {
+        return E_NOINDEX;
+    }
+
+    // Destroy the B+ tree
+    BPlusTree::bPlusDestroy(rootBlock);
+
+    // Update the attribute catalog entry
+    attrCatEntry.rootBlock = -1;
+
+    AttrCacheTable::setAttrCatEntry(relId, attrName, &attrCatEntry);
+
+    return SUCCESS;
+}

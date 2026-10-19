@@ -463,49 +463,51 @@ int IndLeaf::getEntry(void *ptr, int indexNum) {
 }
 
 int IndInternal::setEntry(void *ptr, int indexNum) {
-    if (indexNum < 0 || indexNum >= MAX_KEYS_INTERNAL) {
+
+    if (indexNum < 0 || indexNum >= MAX_KEYS_INTERNAL)
         return E_OUTOFBOUND;
-    }
 
     unsigned char *bufferPtr;
+
     int ret = loadBlockAndGetBufferPtr(&bufferPtr);
-    if (ret != SUCCESS) {
+    if (ret != SUCCESS)
         return ret;
-    }
 
-    struct InternalEntry *internalEntry = (struct InternalEntry *)ptr;
-    unsigned char *entryPtr = bufferPtr + HEADER_SIZE + (indexNum * 20);
+    struct InternalEntry *internalEntry =
+        (struct InternalEntry *)ptr;
 
-    memcpy(entryPtr, &(internalEntry->lChild), sizeof(int32_t));
-    memcpy(entryPtr + 4, &(internalEntry->attrVal), sizeof(Attribute));
-    memcpy(entryPtr + 20, &(internalEntry->rChild), sizeof(int32_t));
+    unsigned char *entryPtr =
+        bufferPtr + HEADER_SIZE + (indexNum * 20);
+
+    memcpy(entryPtr, &(internalEntry->lChild), 4);
+    memcpy(entryPtr + 4, &(internalEntry->attrVal), ATTR_SIZE);
+    memcpy(entryPtr + 4 + ATTR_SIZE, &(internalEntry->rChild), 4);
 
     ret = StaticBuffer::setDirtyBit(this->blockNum);
-    if (ret != SUCCESS) {
+    if (ret != SUCCESS)
         return ret;
-    }
 
     return SUCCESS;
 }
-
 int IndLeaf::setEntry(void *ptr, int indexNum) {
-    if (indexNum < 0 || indexNum >= MAX_KEYS_LEAF) {
+
+    if (indexNum < 0 || indexNum >= MAX_KEYS_LEAF)
         return E_OUTOFBOUND;
-    }
 
     unsigned char *bufferPtr;
-    int ret = loadBlockAndGetBufferPtr(&bufferPtr);
-    if (ret != SUCCESS) {
-        return ret;
-    }
 
-    unsigned char *entryPtr = bufferPtr + HEADER_SIZE + (indexNum * LEAF_ENTRY_SIZE);
+    int ret = loadBlockAndGetBufferPtr(&bufferPtr);
+    if (ret != SUCCESS)
+        return ret;
+
+    unsigned char *entryPtr =
+        bufferPtr + HEADER_SIZE + (indexNum * LEAF_ENTRY_SIZE);
+
     memcpy(entryPtr, (struct Index *)ptr, LEAF_ENTRY_SIZE);
 
     ret = StaticBuffer::setDirtyBit(this->blockNum);
-    if (ret != SUCCESS) {
+    if (ret != SUCCESS)
         return ret;
-    }
 
     return SUCCESS;
 }
