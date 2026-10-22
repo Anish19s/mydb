@@ -1,5 +1,6 @@
 #include "BPlusTree.h"
 #include <cstring>
+#include<iostream>
 
 RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribute attrVal, int op) {
     // Declare a variable called searchIndex of type IndexId
@@ -461,10 +462,11 @@ int BPlusTree::insertIntoLeaf(int relId, char attrName[ATTR_SIZE],
 }
 int BPlusTree::splitLeaf(int leafBlockNum, Index indices[]) {
 
+    std::cout<<"split leaf called";
     // Allocate the new right leaf block
     IndLeaf rightBlk;
     IndLeaf leftBlk(leafBlockNum);
-
+    
     int rightBlkNum = rightBlk.getBlockNum();
     int leftBlkNum = leftBlk.getBlockNum();
 
@@ -506,6 +508,7 @@ int BPlusTree::splitLeaf(int leafBlockNum, Index indices[]) {
         ret = leftBlk.setEntry(&indices[i], i);
         if (ret != SUCCESS)
             return ret;
+            
     }
 
     // Copy the second half of entries to the right block
@@ -518,7 +521,6 @@ int BPlusTree::splitLeaf(int leafBlockNum, Index indices[]) {
         if (ret != SUCCESS)
             return ret;
     }
-
     return rightBlkNum;
 }
 int BPlusTree::insertIntoInternal(int relId, char attrName[ATTR_SIZE],
