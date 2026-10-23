@@ -128,7 +128,7 @@ int Frontend::select_attrlist_from_join_where(
 
     // 1. Create TEMP as the result of the join
     char tempRelName[ATTR_SIZE];
-    strcpy(tempRelName, TEMP_RELNAME);
+    strcpy(tempRelName, TEMP);
 
     int retVal = Algebra::join(
         relname_source_one,
