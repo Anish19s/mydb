@@ -106,15 +106,64 @@ int Frontend::select_from_join_where(char relname_source_one[ATTR_SIZE], char re
                                      char relname_target[ATTR_SIZE],
                                      char join_attr_one[ATTR_SIZE], char join_attr_two[ATTR_SIZE]) {
   // Algebra::join
-  return SUCCESS;
+  int retVal = Algebra::join(
+        relname_source_one,
+        relname_source_two,
+        relname_target,
+        join_attr_one,
+        join_attr_two
+    );
+
+    return retVal;
 }
 
-int Frontend::select_attrlist_from_join_where(char relname_source_one[ATTR_SIZE], char relname_source_two[ATTR_SIZE],
-                                              char relname_target[ATTR_SIZE],
-                                              char join_attr_one[ATTR_SIZE], char join_attr_two[ATTR_SIZE],
-                                              int attr_count, char attr_list[][ATTR_SIZE]) {
-  // Algebra::join + project
-  return SUCCESS;
+int Frontend::select_attrlist_from_join_where(
+    char relname_source_one[ATTR_SIZE],
+    char relname_source_two[ATTR_SIZE],
+    char relname_target[ATTR_SIZE],
+    char join_attr_one[ATTR_SIZE],
+    char join_attr_two[ATTR_SIZE],
+    int attr_count,
+    char attr_list[][ATTR_SIZE]) {
+
+    // 1. Create TEMP as the result of the join
+    char tempRelName[ATTR_SIZE];
+    strcpy(tempRelName, TEMP_RELNAME);
+
+    int retVal = Algebra::join(
+        relname_source_one,
+        relname_source_two,
+        tempRelName,
+        join_attr_one,
+        join_attr_two
+    );
+
+    if (retVal != SUCCESS)
+        return retVal;
+
+    // 2. Open TEMP
+    int tempRelId = OpenRelTable::openRel(tempRelName);
+
+    if (tempRelId < 0) {
+        Schema::deleteRel(tempRelName);
+        return tempRelId;
+    }
+
+    // 3. Project the required attributes from TEMP
+    retVal = Algebra::project(
+        tempRelName,
+        relname_target,
+        attr_count,
+        attr_list
+    );
+
+    // 4. Close TEMP
+    OpenRelTable::closeRel(tempRelId);
+
+    // 5. Delete TEMP
+    Schema::deleteRel(tempRelName);
+
+    return retVal;
 }
 
 int Frontend::custom_function(int argc, char argv[][ATTR_SIZE]) {
