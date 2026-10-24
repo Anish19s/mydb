@@ -462,7 +462,7 @@ int BPlusTree::insertIntoLeaf(int relId, char attrName[ATTR_SIZE],
 }
 int BPlusTree::splitLeaf(int leafBlockNum, Index indices[]) {
 
-    std::cout<<"split leaf called";
+
     // Allocate the new right leaf block
     IndLeaf rightBlk;
     IndLeaf leftBlk(leafBlockNum);
