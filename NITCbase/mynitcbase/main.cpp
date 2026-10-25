@@ -14,35 +14,75 @@ int main(int argc, char *argv[]) {
   StaticBuffer buffer;
   OpenRelTable cache;
 
-  // for (int i = 0; i <2; i++) {
+  
+  
 
-  //   RelCatEntry relCatEntry;
+  //============================ PRINT ALL RELNS ===========================
+  // RecBuffer relCatBuffer(RELCAT_BLOCK);
+  // HeadInfo relCatHeader;
+  // relCatBuffer.getHeader(&relCatHeader);
 
-  //   // Get relation catalog entry
-  //   RelCacheTable::getRelCatEntry(i, &relCatEntry);
 
-  //   printf("Relation: %s\n", relCatEntry.relName);
+  // unsigned char slotmap[relCatHeader.numSlots];
+  // relCatBuffer.getSlotMap(slotmap);
 
-  //   // Get all attribute catalog entries
-  //   for (int j = 0; j < relCatEntry.numAttrs; j++) {
+  // for(int relslot=0;relslot<relCatHeader.numSlots;relslot++){
+  //   if(slotmap[relslot]==SLOT_OCCUPIED){
+  //     Attribute relrecord[RELCAT_NO_ATTRS];
+  //     relCatBuffer.getRecord(relrecord,relslot);
 
-  //     AttrCatEntry attrCatEntry;
+  //     char * relname=relrecord[RELCAT_REL_NAME_INDEX].sVal;
 
-  //     AttrCacheTable::getAttrCatEntry(i, j, &attrCatEntry);
+  //     printf("Relation:%s\n",relname);
 
-  //     printf("  %s: ", attrCatEntry.attrName);
 
-  //     if (attrCatEntry.attrType == STRING) {
-  //       printf("STRING\n");
-  //     }
-  //     else if (attrCatEntry.attrType == NUMBER) {
-  //       printf("NUMBER\n");
+  //     for(int attrblk=ATTRCAT_BLOCK;attrblk!=-1;){
+  //       RecBuffer attrCatbuffer(attrblk);
+  //       HeadInfo attrCatHeader;
+  //       attrCatbuffer.getHeader(&attrCatHeader);
+        
+  //       unsigned char attrslotmap[attrCatHeader.numSlots];
+  //       attrCatbuffer.getSlotMap(attrslotmap);
+        
+
+  //       for(int attrslot=0;attrslot<attrCatHeader.numSlots;attrslot++){
+  //           if(attrslotmap[attrslot]==SLOT_OCCUPIED){
+  //             Attribute attrrecord[RELCAT_NO_ATTRS];
+  //             attrCatbuffer.getRecord(attrrecord,attrslot);
+
+  //             if(strcmp(relname,attrrecord[ATTRCAT_REL_NAME_INDEX].sVal)==0){
+  //                 const char* typestr=(attrrecord[ATTRCAT_ATTR_TYPE_INDEX].nVal==NUMBER)?"NUM":"STR";
+  //                 printf("%s:%s\n",attrrecord[ATTRCAT_ATTR_NAME_INDEX].sVal,typestr);
+  //             }
+  //           }
+  //       }
+  //       attrblk=attrCatHeader.rblock;
   //     }
   //   }
   // }
 
 
-  
+
+
+
+
+
+
+  //=====================printing message=================================
+
+  // unsigned char buffer[BLOCK_SIZE];
+  // Disk::readBlock(buffer,7000);
+  // char message[]="hello";
+  // memcpy(buffer+20,message,6);
+  // Disk::writeBlock(buffer,7000);
+
+  // unsigned char buffer2[BLOCK_SIZE];
+  // char mssg2[6];
+  // Disk::readBlock(mssg2,7000);
+  // memcpy(mssg2,buffer+20,6);
+  // std::cout<<mssg;
+
+
 // ==================BLOCK ALLOC MAP========================
   
   // unsigned char buffer3[BLOCK_SIZE];
@@ -54,6 +94,20 @@ int main(int argc, char *argv[]) {
   //         std::cout << (int)buffer3[i] << " ";
   //     }
   //     std::cout << "\n\n";
+  // }
+
+  
+
+
+
+
+  // unsigned char buffer3[BLOCK_SIZE];
+  // for(int block=0;block<=3;block++){
+  //   Disk::readBlock(buffer3,block);
+  //   std::cout<<"block:"<<block<<"\n";
+  //   for(int j=0;j<BLOCK_SIZE;j++){
+  //     std::cout<<(int)buffer3[j];
+  //   }
   // }
 
   return FrontendInterface::handleFrontend(argc, argv);
