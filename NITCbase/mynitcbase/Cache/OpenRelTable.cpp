@@ -5,7 +5,12 @@
 
 
 OpenRelTableMetaInfo OpenRelTable::tableMetaInfo[MAX_OPEN];
-OpenRelTable::OpenRelTable() {
+bool OpenRelTable::initialized = false;
+
+void OpenRelTable::initialize() {
+    if (initialized) {
+        return;
+    }
 
     // Initialize all entries
     for (int i = 0; i < MAX_OPEN; i++) {
@@ -189,6 +194,12 @@ OpenRelTable::OpenRelTable() {
         tableMetaInfo[ATTRCAT_RELID].relName,
         ATTRCAT_RELNAME
     );
+
+    initialized = true;
+}
+
+OpenRelTable::OpenRelTable() {
+    initialize();
 }
 
 
@@ -202,6 +213,7 @@ OpenRelTable::OpenRelTable() {
 
 
 int OpenRelTable::getFreeOpenRelTableEntry() {
+    initialize();
 
     for (int i = 2; i < MAX_OPEN; i++) {
 
@@ -218,6 +230,7 @@ int OpenRelTable::getFreeOpenRelTableEntry() {
 
 
 int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
+    initialize();
 
     for (int i = 0; i < MAX_OPEN; i++) {
 
@@ -239,6 +252,7 @@ int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
 
 
 int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
+    initialize();
 
     // Check whether relation is already open
 
@@ -394,7 +408,9 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
 }
 
 
-/**************************************************************/int OpenRelTable::closeRel(int relId) {
+/**************************************************************/
+int OpenRelTable::closeRel(int relId) {
+    initialize();
 
     if (relId == RELCAT_RELID || relId == ATTRCAT_RELID) {
         return E_NOTPERMITTED;

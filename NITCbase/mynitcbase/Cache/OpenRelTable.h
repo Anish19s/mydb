@@ -25,8 +25,10 @@ class OpenRelTable {
  private:
   // field
   static OpenRelTableMetaInfo tableMetaInfo[MAX_OPEN];
+  static bool initialized;
 
   // method
+  static void initialize();
   static int getFreeOpenRelTableEntry();
 };
 
