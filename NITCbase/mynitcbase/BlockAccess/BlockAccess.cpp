@@ -386,7 +386,8 @@ int BlockAccess::renameAttribute(char relName[ATTR_SIZE],
     }
 
     return SUCCESS;
-}int BlockAccess::insert(int relId, Attribute *record) {
+}
+int BlockAccess::insert(int relId, Attribute *record) {
 
     // Get relation catalog entry
     RelCatEntry relCatEntry;
