@@ -203,15 +203,6 @@ OpenRelTable::OpenRelTable() {
 }
 
 
-/**************************************************************/
-
-
-
-
-
-/**************************************************************/
-
-
 int OpenRelTable::getFreeOpenRelTableEntry() {
     initialize();
 
@@ -224,9 +215,6 @@ int OpenRelTable::getFreeOpenRelTableEntry() {
 
     return E_CACHEFULL;
 }
-
-
-/**************************************************************/
 
 
 int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
@@ -246,9 +234,6 @@ int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
 
     return E_RELNOTOPEN;
 }
-
-
-/**************************************************************/
 
 
 int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
@@ -408,7 +393,6 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
 }
 
 
-/**************************************************************/
 int OpenRelTable::closeRel(int relId) {
     initialize();
 
@@ -473,6 +457,7 @@ int OpenRelTable::closeRel(int relId) {
 
     return SUCCESS;
 }
+
 OpenRelTable::~OpenRelTable() {
 
     /************ Closing all user relations ************/

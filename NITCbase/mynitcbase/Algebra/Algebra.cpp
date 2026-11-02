@@ -467,6 +467,7 @@ int Algebra::project(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
 
     return SUCCESS;
 }
+
 int Algebra::join(char srcRelation1[ATTR_SIZE],
                   char srcRelation2[ATTR_SIZE],
                   char targetRelation[ATTR_SIZE],
