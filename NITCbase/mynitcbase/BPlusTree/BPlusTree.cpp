@@ -64,7 +64,8 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribut
                 block = entry.rChild;
             }
         }
-    } else {
+    }
+    else {
         /*
          * Continuing a previous search. Start from the entry right after searchIndex.
          */
