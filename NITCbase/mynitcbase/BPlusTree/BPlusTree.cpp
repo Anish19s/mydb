@@ -142,6 +142,7 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribut
     }
 
     return RecId{-1, -1};
+    
 }
 
 int BPlusTree::bPlusCreate(int relId, char attrName[ATTR_SIZE]) {
